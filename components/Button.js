@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
 
     remover: {
         backgroundColor: "#a8a8a8",
-        paddingVertical: 25,
+        paddingVertical: 22,
         width: "50%",
     },
 
@@ -45,6 +45,6 @@ const styles = StyleSheet.create({
     removerText: {
         color: "#000",
         textAlign: "center",
-        fontSize: 20
+        fontSize: 22
     }
 });

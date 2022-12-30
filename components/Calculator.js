@@ -1,43 +1,41 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { useRef, useState } from 'react';
+import { Alert, Image, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import useField from '../hooks/useField';
 import Button from './Button';
 
 export default function Calculator() {
-    const numberList = useRef([]);
-    const [output, setOutput] = useState("");
-
-    const toOutput = () => {
-        const output = numberList.current.join("");
-        setOutput(output);
-        console.log(numberList.current);
-    };
+    const [field, fields, setField] = useField([0]);
     
     const solve = () => {
-        const value = numberList.current.join("");
-        const evaluated = Function(`return ${value}`)();
-        numberList.current = String(evaluated).split("");
-        toOutput();
+        try {
+            const evaluated = Function(`return ${field}`)();
+            const values = String(evaluated).split("");
+            setField(values);
+        } catch (err) {
+            Alert.alert("Error", "Invalid math expression!");
+            setField([]);
+        }
     };
 
     const addNumber = (number) => {
-        numberList.current = [...numberList.current, number];
-        toOutput();
+        const values = [...fields, number];
+        setField(values);
     };
 
     const delNumber = () => {
-        numberList.current = numberList.current.slice(0, numberList.current.length - 1);
-        toOutput();
+        const values = fields.slice(0, fields.length - 1);
+        setField(values);
     };
  
     const clearNumber = () => {
-        numberList.current = [];
-        toOutput();
+        const values = [];
+        setField(values);
     };
 
     return (
         <View style={styles.calculatorContainer}>
             <View style={styles.outputContainer}>
-                <Text style={styles.output}>{output}</Text>
+                <Text style={styles.output}>{field}</Text>
             </View>
             <View style={styles.btnContainer}>
                 <View style={styles.btnRow}>
@@ -79,15 +77,13 @@ const styles = StyleSheet.create({
     },
 
     outputContainer: {
-        
+        paddingVertical: 5,
+        paddingHorizontal: 4
     },
 
     output: {
-        color: "#fff"
-    },
-
-    btnContainer: {
-        // backgroundColor: "red"
+        color: "#fff",
+        fontSize: 50
     },
 
     btnRow: {
