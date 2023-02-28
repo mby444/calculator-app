@@ -1,16 +1,38 @@
-import { Alert, Image, StyleSheet, Text, View } from 'react-native';
-import { useEffect, useRef, useState } from 'react';
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRef, useState } from 'react';
 import useField from '../hooks/useField';
+import History from './History';
 import Button from './Button';
 
 export default function Calculator() {
-    const [field, fields, setField] = useField([0]);
+    const [field, symbolicField, fields, setField] = useField([0]);
+
+    const questionHistory = useRef([]);
+    const questionHistoryOutput = useRef("");
+    const [historyPairs, setHistoryPairs] = useState([]);
+
+    const setQuestionHistory = (value) => {
+        questionHistory.current = value;
+    };
+
+    const toQuestionHistoryOutput = () => {
+        questionHistoryOutput.current = questionHistory.current.join("");
+    };
+
+    const pushHistoryPairs = (values) => {
+        const question = questionHistoryOutput.current;
+        const result = values.join("")
+        const output = [question, result];
+        setHistoryPairs((h) => [...h, output]);
+    };
     
     const solve = () => {
         try {
             const evaluated = Function(`return ${field}`)();
-            const values = String(evaluated).split("");
+            const fixedEvaluated = Math.round(evaluated * 1e15) / 1e15;
+            const values = String(fixedEvaluated).split("");
             setField(values);
+            pushHistoryPairs(values);
         } catch (err) {
             Alert.alert("Error", "Invalid math expression!");
             setField([]);
@@ -20,22 +42,29 @@ export default function Calculator() {
     const addNumber = (number) => {
         const values = [...fields, number];
         setField(values);
+        setQuestionHistory(values);
+        toQuestionHistoryOutput();
     };
 
     const delNumber = () => {
         const values = fields.slice(0, fields.length - 1);
         setField(values);
+        setQuestionHistory(values);
+        toQuestionHistoryOutput();
     };
  
     const clearNumber = () => {
         const values = [];
         setField(values);
+        setQuestionHistory(values);
+        toQuestionHistoryOutput();
     };
 
     return (
         <View style={styles.calculatorContainer}>
+            <History values={historyPairs} />
             <View style={styles.outputContainer}>
-                <Text style={styles.output}>{field}</Text>
+                <Text style={styles.output}>{symbolicField}</Text>
             </View>
             <View style={styles.btnContainer}>
                 <View style={styles.btnRow}>
@@ -83,7 +112,8 @@ const styles = StyleSheet.create({
 
     output: {
         color: "#fff",
-        fontSize: 50
+        fontSize: 50,
+        textAlign: "right"
     },
 
     btnRow: {

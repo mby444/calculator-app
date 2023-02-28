@@ -1,9 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 
+const putSymbol = (value="") => {
+    const symbolObj = {
+        "/": "÷",
+        "*": "×"
+    };
+    const newValue = value.split("").map((v) => {
+        if (!(v in symbolObj)) return v;
+        return symbolObj[v]; 
+    }).join("");
+    return newValue;
+};
+
 export default function useField(values=[]) {
     const numberList = useRef(values);
     const [output, setOutput] = useState("");
     const field = output;
+    const symbolicField = putSymbol(output);
     const fields = numberList.current;
     
     useEffect(() => {
@@ -20,5 +33,5 @@ export default function useField(values=[]) {
         toOutput();
     };
 
-    return [field, fields, setField];
+    return [field, symbolicField, fields, setField];
 }
