@@ -1,68 +1,68 @@
 import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useField from '../hooks/useField';
+import useWriteHistory from '../hooks/useWriteHistory';
 import History from './History';
 import Button from './Button';
 
 export default function Calculator() {
-    const [field, symbolicField, fields, setField] = useField([0]);
+    const [field, symbolicField, fields, setField] = useField([]);
+    const [histories, setHistories] = useWriteHistory([]);
 
-    const questionHistory = useRef([]);
-    const questionHistoryOutput = useRef("");
-    const [historyPairs, setHistoryPairs] = useState([]);
-
-    const setQuestionHistory = (value) => {
-        questionHistory.current = value;
+    const checkEvaluateError = (value=null) => {
+        const errorValues = [Infinity, -Infinity, NaN, null, undefined];
+        const isError = errorValues.includes(value);
+        return !isError;
     };
 
-    const toQuestionHistoryOutput = () => {
-        questionHistoryOutput.current = questionHistory.current.join("");
+    const evaluate = (value) => {
+        const evaluated = Function(`return ${value}`)();
+        const fixedEvaluated = Math.round(evaluated * 1e15) / 1e15;
+        if (!checkEvaluateError(fixedEvaluated)) throw new Error("Error");
+        const output = String(fixedEvaluated);
+        const outputs = value.split("");
+        return [output, outputs];
     };
 
-    const pushHistoryPairs = (values) => {
-        const question = questionHistoryOutput.current;
-        const result = values.join("")
-        const output = [question, result];
-        setHistoryPairs((h) => [...h, output]);
-    };
-    
-    const solve = () => {
+    const solution = () => {
         try {
-            const evaluated = Function(`return ${field}`)();
-            const fixedEvaluated = Math.round(evaluated * 1e15) / 1e15;
-            const values = String(fixedEvaluated).split("");
+            const [value, values] = evaluate(field);
+            addHistory(symbolicField, value);
             setField(values);
-            pushHistoryPairs(values);
         } catch (err) {
             Alert.alert("Error", "Invalid math expression!");
             setField([]);
         }
     };
 
+    const solve = () => {
+        solution();
+    };
+
     const addNumber = (number) => {
         const values = [...fields, number];
         setField(values);
-        setQuestionHistory(values);
-        toQuestionHistoryOutput();
     };
 
     const delNumber = () => {
         const values = fields.slice(0, fields.length - 1);
         setField(values);
-        setQuestionHistory(values);
-        toQuestionHistoryOutput();
     };
  
     const clearNumber = () => {
         const values = [];
         setField(values);
-        setQuestionHistory(values);
-        toQuestionHistoryOutput();
+    };
+
+    const addHistory = (expression, answer) => {
+        const pair = [expression, answer];
+        const values = [...histories, pair];
+        setHistories(values);
     };
 
     return (
         <View style={styles.calculatorContainer}>
-            <History values={historyPairs} />
+            <History values={histories} />
             <View style={styles.outputContainer}>
                 <Text style={styles.output}>{symbolicField}</Text>
             </View>

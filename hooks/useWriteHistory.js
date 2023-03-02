@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 
-export default function useWriteHistory(pairs=[[]]) {
-    const historyPairs = useRef(pairs);
+export default function useWriteHistory(histories=[]) {
+    const [output, setOutput] = useState(histories);
 
-    const writeTempHistory = (value) => {
-
+    const setHistories = (values) => {
+        setOutput(values);
     };
 
-    const setPair = (pair) => {
-
-    };
+    return [output, setHistories];
 }
